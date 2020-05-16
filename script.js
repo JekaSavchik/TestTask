@@ -1,64 +1,132 @@
 window.onload = () => {
 
+    
     let prevElement;
     let tableBody = document.getElementById("tableBody");
     let firstBlock = document.getElementById("firstBlock");
     let secondBlock = document.getElementById("secondBlock");
     let input = document.getElementById("input");
+    let addFormButton = document.getElementById("add");
+    let addElementButton = document.getElementById("add_2");
+    let cancelButton = document.getElementById("cancel");
+
     let accounts = data.accounts;
 
-    // document.onkeyup = () => {
-    //     console.log(document.activeElement.parentNode)
-    //     var index = Array.prototype.indexOf.call(tableBody.children, document.activeElement);
-    //     console.log(index);
-    // }
+    accounts.forEach(element => {
+        tableFill(element.title, element.img);
+    });
+    tableBody.firstElementChild.focus();
 
-    document.onkeydown = (event) => {
+    
+
+    tableBody.addEventListener('keydown', tableConrol);
+    addFormButton.addEventListener('keydown', addFormButtonControl);
+    addElementButton.addEventListener('keydown', addElementButtonControl);
+    cancelButton.addEventListener('keydown', cancelButtonControl);
+    input.addEventListener('keydown', inputControl);
+
+    function tableConrol(event) {
         const activElement = document.activeElement;
         switch (event.code) {
             case "ArrowRight":
-                if (activElement.nodeName == "TR") {
-                    document.getElementById("add").focus();
-                    prevElement = activElement;
-                } else if (activElement.id == "add_2") {
-                    document.getElementById("cancel").focus();
-                }
+                addFormButton.focus();
+                prevElement = activElement;
                 break;
             case "ArrowDown":
                 if (activElement.nextElementSibling)
                     activElement.nextElementSibling.focus();
-                else if (activElement.id == "input") {
-                    if (prevElement) {
-                        prevElement.focus();
-                    } else
-                        document.getElementById("add_2").focus();
-                }
-
                 break;
             case "ArrowUp":
-                if (activElement.id == "add_2" || activElement.id == "cancel") {
-                    prevElement = activElement;
-                    input.focus();
-                } else if (activElement.previousElementSibling)
+                if (activElement.previousElementSibling)
                     activElement.previousElementSibling.focus();
                 break;
             case "ArrowLeft":
-                if (activElement.nodeName == "TR") {
-                    if (activElement.previousElementSibling)
-                        activElement.previousElementSibling.focus();
-                    else if (activElement.nextElementSibling)
-                        activElement.nextElementSibling.focus();
-                    else
-                        document.getElementById("add").focus();
-                        delElement(Array.prototype.indexOf.call(tableBody.children, activElement))
-                    activElement.remove();
-                } else if (activElement.id == "add")
-                    prevElement.focus();
-                else if (activElement.id == "cancel")
-                    document.getElementById("add_2").focus();
+                if (activElement.previousElementSibling)
+                    activElement.previousElementSibling.focus();
+                else if (activElement.nextElementSibling)
+                    activElement.nextElementSibling.focus();
+                else
+                    addFormButton.focus();
+                delElement(Array.prototype.indexOf.call(tableBody.children, activElement))
+                activElement.remove();
                 break;
             default:
                 break;
+        }
+    }
+
+    function addFormButtonControl(event) {
+        switch (event.code) {
+            case "Enter":
+                firstBlock.style.display = "none";
+                secondBlock.style.display = "block";
+                prevElement = null;
+
+                input.focus();
+                break;
+            case "ArrowLeft":
+                prevElement.focus();
+                break;
+            default:
+                break;
+        }
+    }
+
+    function addElementButtonControl(event) {
+        switch (event.code) {
+            case "Enter":
+                if (!input.value)
+                    return;
+
+                addElement(input.value);
+
+                input.value = '';
+
+                firstBlock.style.display = "flex";
+                secondBlock.style.display = "none";
+
+                tableBody.firstElementChild.focus();
+                break;
+            case "ArrowRight":
+                cancelButton.focus();
+                break;
+            case "ArrowUp":
+                input.focus();
+                break;
+            default:
+                break;
+        }
+    }
+
+    function cancelButtonControl(event) {
+        switch (event.code) {
+            case "Enter":
+                firstBlock.style.display = "flex";
+                secondBlock.style.display = "none";
+
+                input.value = '';
+
+                tableBody.firstElementChild.focus();
+
+                break;
+            case "ArrowUp":
+                prevElement = cancelButton;
+                input.focus();
+                break;
+            case "ArrowLeft":
+                addElementButton.focus();
+                break;
+            default:
+                break;
+        }
+    }
+
+    function inputControl(event) {
+        if (event.code == "ArrowDown") {
+            if (prevElement) {
+                prevElement.focus();
+            } else
+                addElementButton.focus();
         }
     }
 
@@ -67,65 +135,29 @@ window.onload = () => {
         console.log(accounts);
     }
 
-    addForm = () => {
-        firstBlock.style.display = "none";
-        secondBlock.style.display = "block";
-        prevElement = null;
-
-        input.focus();
+    addElement = (title) => {
+        accounts.push({
+            title: title,
+            img: "image.png"
+        });
+        const lastElem = accounts[accounts.length - 1];
+        tableFill(lastElem.title, lastElem.img)
     }
 
-    addElement = () => {
-        if (!input.value)
-            return;
-
+    function tableFill(title, img) {
         let tr = document.createElement('tr');
-        let td = document.createElement('td');
-        td.innerHTML = input.value;
-
-        tr.appendChild(td);
         tr.tabIndex = 0;
+        let tdImg = document.createElement('td');
+        let tdTitle = document.createElement('td');
+
+        tdImg.innerHTML = '<img src="' + img + '" alt="images">';
+        tdTitle.innerHTML = '<h2>' + title + '</h2>';
+
+        tr.appendChild(tdImg);
+        tr.appendChild(tdTitle);
         tableBody.appendChild(tr);
-
-        accounts.push({title: input.value, img: "image.png"})
-        console.log(accounts);
-
-        input.value = '';
-
-        firstBlock.style.display = "flex";
-        secondBlock.style.display = "none";
-
-        tableBody.firstElementChild.focus();
     }
 
-    cancel = () => {
-
-        firstBlock.style.display = "flex";
-        secondBlock.style.display = "none";
-
-        input.value = '';
-
-        tableBody.firstElementChild.focus();
-    }
-
-    tableFill = () => {
-        for (item in accounts) {
-            let tr = document.createElement('tr');
-            tr.tabIndex = 0;
-            let tdImg = document.createElement('td');
-            let tdTitle = document.createElement('td');
-
-            tdImg.innerHTML = '<img src="' + accounts[item].img + '" alt="images">';
-            tdTitle.innerHTML = '<h2>' + accounts[item].title + '</h2>';
-
-            tr.appendChild(tdImg);
-            tr.appendChild(tdTitle);
-            tableBody.appendChild(tr);
-        }
-    }
-
-    tableFill();
-    tableBody.firstElementChild.focus();
 }
 
 const data = {
